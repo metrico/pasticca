@@ -1,4 +1,4 @@
-# pasticca
+# 💊 pasticca
 Store and Retrieve data from `pastila` in Go for fun a profit-loss
 
 ## Usage
