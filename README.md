@@ -1,5 +1,5 @@
 # 💊 pasticca
-Store and Retrieve data from `pastila` in Go for fun a profit-loss
+Store and Retrieve data from `pastila` in Go for fun & profit-loss
 
 ## Usage
 ```go
