@@ -14,7 +14,6 @@ import (
         "regexp"
         "strings"
         "fmt"
-//        "io/ioutil"
 )
 
 const clickhouseURL = "https://play.clickhouse.com/?user=paste"
