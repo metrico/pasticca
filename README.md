@@ -5,6 +5,11 @@ Store and Retrieve data from `pastila` in Go for fun a profit-loss
 ```go
 import ("github.com/metrico/pasticca/paste")
 ```
+
+## Example
+See `main.go`
+
+#### Plaintext/JSON
 ```go
 // Example: Save some content
 content := "This is a test paste."
@@ -22,12 +27,44 @@ if err != nil {
 }
 fmt.Printf("Loaded content: %s\nIs encrypted: %v\n", loadedContent, isEncrypted)
 ```
-
-## Example
-See `main.go`
-
 ```
 Saved paste with fingerprint/hash: 913ae2b1/748ab86a806c2de1fd5753fb3ffff516
 Loaded content: This is a test paste.
 Is encrypted: false
+```
+
+#### Encrypted
+```go
+// Example: Save encrypted content
+encryptedContent := "This is a secret message."
+encryptedFingerprint, encryptedHashWithAnchor, err := paste.Save(encryptedContent, "", "", true)
+if err != nil {
+        log.Fatalf("Error saving encrypted paste: %v", err)
+}
+fmt.Printf("Saved encrypted paste with fingerprint/hash: %s/%s\n", encryptedFingerprint, encryptedHashWithAnchor)
+
+// Artificial Delay
+time.Sleep(1 * time.Second)
+
+// Example: Load and decrypt the encrypted content
+decryptedContent, isStillEncrypted, err := paste.Load(encryptedFingerprint, encryptedHashWithAnchor)
+if err != nil {
+log.Fatalf("Error loading encrypted paste: %v", err)
+}
+fmt.Printf("Loaded and decrypted content: %s\nIs still encrypted: %v\n", decryptedContent, isStillEncrypted)
+
+// Example: Try to load encrypted content without the key
+encryptedHashWithoutAnchor := strings.Split(encryptedHashWithAnchor, "#")[0]
+encryptedContentWithoutKey, isEncryptedWithoutKey, err := paste.Load(encryptedFingerprint, encryptedHashWithoutAnchor)
+if err != nil {
+        log.Fatalf("Error loading encrypted paste without key: %v", err)
+}
+fmt.Printf("Loaded encrypted content without key: %s\nIs encrypted: %v\n", encryptedContentWithoutKey, isEncryptedWithoutKey)
+```
+```
+Saved encrypted paste with fingerprint/hash: b4765c53/94cf5b7bee267b1d41c9ada746ebe6e1#FFUgNmg29LqBLdN3LQdfzw==
+Loaded and decrypted content: This is a secret message.
+Is still encrypted: true
+Loaded encrypted content without key: T2ZudNTJcSKSCkod+eUeHp9LnupkOSBl6OlL6ts7Uss0LvrtPMoFrDI=
+Is encrypted: true
 ```

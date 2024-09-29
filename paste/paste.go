@@ -14,7 +14,6 @@ import (
         "regexp"
         "strings"
         "fmt"
-        "io/ioutil"
 )
 
 const clickhouseURL = "https://play.clickhouse.com/?user=paste"
@@ -29,7 +28,14 @@ type DataResponse struct {
 }
 
 // Load retrieves data from Clickhouse
-func Load(fingerprint, hash string) (string, bool, error) {
+func Load(fingerprint, hashWithAnchor string) (string, bool, error) {
+        parts := strings.SplitN(hashWithAnchor, "#", 2)
+        hash := parts[0]
+        var key string
+        if len(parts) > 1 {
+                key = parts[1]
+        }
+
         query := fmt.Sprintf(`
                 SELECT content, is_encrypted
                 FROM data
@@ -39,8 +45,6 @@ func Load(fingerprint, hash string) (string, bool, error) {
                 LIMIT 1
                 FORMAT JSON
         `, fingerprint, hash)
-
-        // fmt.Printf("Debug: Executing query: %s\n", query) // Debug print
 
         resp, err := http.Post(clickhouseURL, "application/x-www-form-urlencoded", strings.NewReader(query))
         if err != nil {
@@ -52,12 +56,10 @@ func Load(fingerprint, hash string) (string, bool, error) {
                 return "", false, fmt.Errorf("HTTP status %s", resp.Status)
         }
 
-        body, err := ioutil.ReadAll(resp.Body)
+        body, err := io.ReadAll(resp.Body)
         if err != nil {
                 return "", false, fmt.Errorf("failed to read response body: %v", err)
         }
-
-        // fmt.Printf("Debug: Response body: %s\n", string(body)) // Debug print
 
         var response DataResponse
         err = json.Unmarshal(body, &response)
@@ -69,11 +71,52 @@ func Load(fingerprint, hash string) (string, bool, error) {
                 return "", false, fmt.Errorf("paste not found or multiple rows returned (rows: %d)", response.Rows)
         }
 
-        // Convert uint8 to bool
+        content := response.Data[0].Content
         isEncrypted := response.Data[0].IsEncrypted != 0
 
-        return response.Data[0].Content, isEncrypted, nil
+        if isEncrypted && key != "" {
+                decryptedContent, err := DecryptContent(content, key)
+                if err != nil {
+                        return "", true, fmt.Errorf("failed to decrypt content: %v", err)
+                }
+                content = decryptedContent
+        }
+
+        return content, isEncrypted, nil
 }
+
+// DecryptContent decrypts the content using the provided key
+func DecryptContent(encryptedContent, keyBase64 string) (string, error) {
+        key, err := base64.StdEncoding.DecodeString(keyBase64)
+        if err != nil {
+                return "", fmt.Errorf("failed to decode key: %v", err)
+        }
+
+        ciphertext, err := base64.StdEncoding.DecodeString(encryptedContent)
+        if err != nil {
+                return "", fmt.Errorf("failed to decode ciphertext: %v", err)
+        }
+
+        block, err := aes.NewCipher(key)
+        if err != nil {
+                return "", fmt.Errorf("failed to create cipher: %v", err)
+        }
+
+        if len(ciphertext) < aes.BlockSize {
+                return "", errors.New("ciphertext too short")
+        }
+
+        iv := ciphertext[:aes.BlockSize]
+        ciphertext = ciphertext[aes.BlockSize:]
+
+        stream := cipher.NewCTR(block, iv)
+        plaintext := make([]byte, len(ciphertext))
+        stream.XORKeyStream(plaintext, ciphertext)
+
+        return string(plaintext), nil
+}
+
+
 // Save stores data in Clickhouse
 func Save(content, prevFingerprint, prevHash string, isEncrypted bool) (string, string, error) {
         text := content
