@@ -28,7 +28,7 @@ if err != nil {
 fmt.Printf("Loaded content: %s\nIs encrypted: %v\n", loadedContent, isEncrypted)
 ```
 ```
-Saved paste with fingerprint/hash: 913ae2b1/748ab86a806c2de1fd5753fb3ffff516
+Saved paste with fingerprint/hash: xxxxxxx/yyyyyyyyyyy
 Loaded content: This is a test paste.
 Is encrypted: false
 ```
@@ -37,21 +37,21 @@ Is encrypted: false
 ```go
 // Example: Save encrypted content
 encryptedContent := "This is a secret message."
-encryptedFingerprint, encryptedHashWithAnchor, err := paste.Save(encryptedContent, "", "", true)
+fingerprint, hashWithAnchor, err := paste.Save(encryptedContent, "", "", true)
 if err != nil {
         log.Fatalf("Error saving encrypted paste: %v", err)
 }
-fmt.Printf("Saved encrypted paste with fingerprint/hash: %s/%s\n", encryptedFingerprint, encryptedHashWithAnchor)
+fmt.Printf("Saved paste with fingerprint/hash: %s/%s\n", fingerprint, hashWithAnchor)
 
 // Example: Load and decrypt the encrypted content
-decryptedContent, isStillEncrypted, err := paste.Load(encryptedFingerprint, encryptedHashWithAnchor)
+decryptedContent, isEncrypted, err := paste.Load(fingerprint, hashWithAnchor)
 if err != nil {
-log.Fatalf("Error loading encrypted paste: %v", err)
+        log.Fatalf("Error loading encrypted paste: %v", err)
 }
-fmt.Printf("Loaded and decrypted content: %s\nIs encrypted: %v\n", decryptedContent, isStillEncrypted)
+fmt.Printf("Decrypted content: %s\nIs encrypted: %v\n", decryptedContent, isEncrypted)
 ```
 ```
-Saved encrypted paste with fingerprint/hash: b4765c53/94cf5b7bee267b1d41c9ada746ebe6e1#FFUgNmg29LqBLdN3LQdfzw==
+Saved encrypted paste with fingerprint/hash: xxxxxxx/yyyyyyyyyyy#zzzzzzzzzz==
 Loaded and decrypted content: This is a secret message.
 Is encrypted: true
 ```
