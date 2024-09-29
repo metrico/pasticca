@@ -43,28 +43,15 @@ if err != nil {
 }
 fmt.Printf("Saved encrypted paste with fingerprint/hash: %s/%s\n", encryptedFingerprint, encryptedHashWithAnchor)
 
-// Artificial Delay
-time.Sleep(1 * time.Second)
-
 // Example: Load and decrypt the encrypted content
 decryptedContent, isStillEncrypted, err := paste.Load(encryptedFingerprint, encryptedHashWithAnchor)
 if err != nil {
 log.Fatalf("Error loading encrypted paste: %v", err)
 }
-fmt.Printf("Loaded and decrypted content: %s\nIs still encrypted: %v\n", decryptedContent, isStillEncrypted)
-
-// Example: Try to load encrypted content without the key
-encryptedHashWithoutAnchor := strings.Split(encryptedHashWithAnchor, "#")[0]
-encryptedContentWithoutKey, isEncryptedWithoutKey, err := paste.Load(encryptedFingerprint, encryptedHashWithoutAnchor)
-if err != nil {
-        log.Fatalf("Error loading encrypted paste without key: %v", err)
-}
-fmt.Printf("Loaded encrypted content without key: %s\nIs encrypted: %v\n", encryptedContentWithoutKey, isEncryptedWithoutKey)
+fmt.Printf("Loaded and decrypted content: %s\nIs encrypted: %v\n", decryptedContent, isStillEncrypted)
 ```
 ```
 Saved encrypted paste with fingerprint/hash: b4765c53/94cf5b7bee267b1d41c9ada746ebe6e1#FFUgNmg29LqBLdN3LQdfzw==
 Loaded and decrypted content: This is a secret message.
-Is still encrypted: true
-Loaded encrypted content without key: T2ZudNTJcSKSCkod+eUeHp9LnupkOSBl6OlL6ts7Uss0LvrtPMoFrDI=
 Is encrypted: true
 ```
