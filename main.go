@@ -2,6 +2,7 @@ package main
 
 import (
         "fmt"
+        "time"
         "log"
         "strings"
         "github.com/metrico/pasticca/paste"
@@ -24,17 +25,27 @@ func main() {
         }
         fmt.Printf("Loaded content: %s\nIs encrypted: %v\n", loadedContent, isEncrypted)
 
-        /*
-        // Example: Save encrypted content
+               // Example: Save encrypted content
         encryptedContent := "This is a secret message."
         encryptedFingerprint, encryptedHashWithAnchor, err := paste.Save(encryptedContent, "", "", true)
         if err != nil {
                 log.Fatalf("Error saving encrypted paste: %v", err)
         }
-        encryptedHash := strings.Split(encryptedHashWithAnchor, "#")[0] // Remove anchor
-        fmt.Printf("Saved encrypted paste with fingerprint/hash: %s/%s\n", encryptedFingerprint, encryptedHash)
+        fmt.Printf("Saved encrypted paste with fingerprint/hash: %s/%s\n", encryptedFingerprint, encryptedHashWithAnchor)
+        time.Sleep(2 * time.Second)
 
-        // Note: To decrypt the content, you would need to handle the key from the URL anchor
-        // and pass it to the AESDecrypt function. This example doesn't show that process.
-        */
+        // Example: Load and decrypt the encrypted content
+        decryptedContent, isStillEncrypted, err := paste.Load(encryptedFingerprint, encryptedHashWithAnchor)
+        if err != nil {
+                log.Fatalf("Error loading encrypted paste: %v", err)
+        }
+        fmt.Printf("Loaded and decrypted content: %s\nIs still encrypted: %v\n", decryptedContent, isStillEncrypted)
+
+        // Example: Try to load encrypted content without the key
+        encryptedHashWithoutAnchor := strings.Split(encryptedHashWithAnchor, "#")[0]
+        encryptedContentWithoutKey, isEncryptedWithoutKey, err := paste.Load(encryptedFingerprint, encryptedHashWithoutAnchor)
+        if err != nil {
+                log.Fatalf("Error loading encrypted paste without key: %v", err)
+        }
+        fmt.Printf("Loaded encrypted content without key: %s\nIs encrypted: %v\n", encryptedContentWithoutKey, isEncryptedWithoutKey)
 }
